@@ -1,4 +1,4 @@
-# Kåkå — Excel-transform
+# Kåkå — CSV till Excel
 
 Transform uploaded CSV files into the Kåkå output format. Edit rows in the browser and download as `.xlsx`. All processing runs locally — no server.
 
@@ -21,7 +21,3 @@ npm run preview
 ## Deploy
 
 See [DEPLOY.md](./DEPLOY.md) for GitHub Pages or internal IIS hosting.
-
-## Separate project
-
-This app is **not** the logistics cost dashboard. That project lives in `../CostKontroll-FO`.
