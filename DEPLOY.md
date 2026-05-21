@@ -57,6 +57,22 @@ npm run preview
 
 Push to `main` — GitHub rebuilds and redeploys in a few minutes.
 
+## Troubleshooting
+
+### "Multiple artifacts named github-pages"
+
+Usually caused by **Re-run failed jobs** (creates a second artifact). Fix:
+
+1. **Actions** → cancel any running workflows
+2. Push a **new** commit (do not use Re-run):
+
+   ```bash
+   git commit --allow-empty -m "redeploy pages"
+   git push
+   ```
+
+3. On GitHub, check **Actions** — delete extra workflows if you see both `Deploy to GitHub Pages` and a default `pages-build-deployment` / Jekyll workflow. Keep only `.github/workflows/deploy.yml`.
+
 ## Private repos
 
 GitHub Pages for **private** repos may require a paid GitHub plan. Use a **public** repo for free hosting, or host `dist` on your internal server instead (see conversation / IIS).
