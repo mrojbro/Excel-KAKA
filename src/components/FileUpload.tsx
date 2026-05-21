@@ -14,7 +14,7 @@ export function FileUpload({ onFileSelect, isLoading, fileName }: FileUploadProp
     (file: File | undefined) => {
       if (!file) return
       const ext = file.name.split('.').pop()?.toLowerCase()
-      if (ext !== 'xlsx' && ext !== 'xls') return
+      if (ext !== 'csv') return
       onFileSelect(file)
     },
     [onFileSelect],
@@ -51,7 +51,7 @@ export function FileUpload({ onFileSelect, isLoading, fileName }: FileUploadProp
       <input
         ref={inputRef}
         type="file"
-        accept=".xlsx,.xls"
+        accept=".csv,text/csv"
         className="hidden"
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
@@ -59,10 +59,10 @@ export function FileUpload({ onFileSelect, isLoading, fileName }: FileUploadProp
         📊
       </div>
       <p className="text-lg font-medium text-[var(--color-text)]">
-        {isLoading ? 'Läser in fil…' : 'Släpp Excel-fil här eller klicka för att välja'}
+        {isLoading ? 'Läser in fil…' : 'Släpp CSV-fil här eller klicka för att välja'}
       </p>
       <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-        Stöd för .xlsx och .xls — all bearbetning sker lokalt i webbläsaren
+        Endast .csv — all bearbetning sker lokalt i webbläsaren
       </p>
       {fileName && (
         <p className="mt-3 text-sm font-medium text-[var(--color-accent)]">{fileName}</p>

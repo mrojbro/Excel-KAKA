@@ -101,7 +101,7 @@ function ChartCard({ title, data, dataKey, recentWindow = false }: ChartCardProp
               <LabelList
                 dataKey="value"
                 position="top"
-                formatter={(value) => formatValue(Number(value))}
+                formatter={(value: number | string) => formatValue(Number(value))}
                 style={{ fill: '#e6edf3', fontSize: 11, fontWeight: 500 }}
               />
             </Bar>

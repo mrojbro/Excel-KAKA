@@ -1,7 +1,6 @@
 import type { DashboardKpis, GroupSummary, LogisticsRow } from '../types'
 import {
   calculatePall,
-  FREIGHT_BY_RPU_KOSTNAD,
   FUEL_SURCHARGE_KOSTNAD,
   isFreightByRpuKostnad,
   isKostnadType,
