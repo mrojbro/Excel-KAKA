@@ -1,5 +1,5 @@
 {
-  "name": "logistics-dashboard",
+  "name": "kaka-excel-transform",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -11,7 +11,6 @@
   "dependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "recharts": "^2.15.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

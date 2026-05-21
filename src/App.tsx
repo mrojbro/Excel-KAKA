@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { FileUpload } from './components/FileUpload'
+import { FileUpload } from './kaka/components/FileUpload'
 import { OutputSummary } from './kaka/components/OutputSummary'
 import { OutputTable } from './kaka/components/OutputTable'
 import { downloadOutputExcel } from './kaka/exportOutputExcel'
@@ -98,7 +98,7 @@ export default function App() {
       <header className="border-b border-[var(--color-border)] bg-[var(--color-surface-elevated)]">
         <div className="mx-auto max-w-[1800px] px-4 py-5 sm:px-6">
           <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">
-            Kåkå — Excel-transform
+            Kåkå — CSV till Excel
           </h1>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             Ladda upp indata (.csv), transformera till utformat, redigera och ladda

@@ -70,4 +70,3 @@ export function FileUpload({ onFileSelect, isLoading, fileName }: FileUploadProp
     </div>
   )
 }
-
