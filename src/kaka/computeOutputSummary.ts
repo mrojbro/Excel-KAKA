@@ -23,6 +23,19 @@ function parseNum(value: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
+function roundUpToEven(value: number): number {
+  if (value <= 0) return 0
+  const roundedUp = Math.ceil(value)
+  return roundedUp % 2 === 0 ? roundedUp : roundedUp + 1
+}
+
+function normalizeSummaryKolliAntal(godsslag: string, value: number): number {
+  if (godsslag === 'Pall' || godsslag === 'B-Pall') {
+    return roundUpToEven(value)
+  }
+  return value
+}
+
 export function formatSummaryNumber(n: number): string {
   if (n === 0) return '0'
   const rounded = Math.round(n * 1000) / 1000
@@ -58,6 +71,13 @@ export function computeOutputSummary(rows: OutputRow[]): OutputSummary {
       a.godsslagTemp.localeCompare(b.godsslagTemp, 'sv') ||
       a.godsslag.localeCompare(b.godsslag, 'sv'),
   )
+
+  for (const line of lines) {
+    line.kolliAntalSum = normalizeSummaryKolliAntal(
+      line.godsslag,
+      line.kolliAntalSum,
+    )
+  }
 
   const totals = lines.reduce(
     (acc, line) => ({

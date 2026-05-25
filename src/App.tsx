@@ -2,62 +2,73 @@ import { useCallback, useState } from 'react'
 import { FileUpload } from './kaka/components/FileUpload'
 import { OutputSummary } from './kaka/components/OutputSummary'
 import { OutputTable } from './kaka/components/OutputTable'
+import { PasteInput } from './kaka/components/PasteInput'
 import { downloadOutputExcel } from './kaka/exportOutputExcel'
 import { getTomorrowDate } from './kaka/getTomorrowDate'
-import { parseInputCsv } from './kaka/parseInputCsv'
+import {
+  parseInputCsv,
+  parseInputText,
+  type ParseInputResult,
+} from './kaka/parseInputCsv'
 import { createBlankOutputRow, transformInputRows } from './kaka/transform'
 import type { OutputColumn } from './kaka/constants'
 import type { OutputRow } from './kaka/types'
 
 export default function App() {
   const [outputRows, setOutputRows] = useState<OutputRow[]>([])
-  const [fileName, setFileName] = useState<string | null>(null)
+  const [sourceLabel, setSourceLabel] = useState<string | null>(null)
+  const [pastedInput, setPastedInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [inputRowCount, setInputRowCount] = useState(0)
 
+  const processParsedInput = useCallback((parsed: ParseInputResult) => {
+    if (parsed.parseError) {
+      setError(parsed.parseError)
+      return
+    }
+
+    if (parsed.missingColumns.length > 0) {
+      setWarning(
+        `Följande indatakolumner saknas i indata (valfria): ${parsed.missingColumns.join(', ')}`,
+      )
+    }
+
+    if (parsed.rows.length === 0) {
+      setError('Indata innehåller inga datarader.')
+      return
+    }
+
+    setSourceLabel(parsed.fileLabel)
+    setInputRowCount(parsed.rows.length)
+    const transformed = transformInputRows(parsed.rows)
+    setOutputRows(transformed)
+
+    if (transformed.length === 0) {
+      setStatus(
+        `${parsed.rows.length} indatarad(er) lästes in, men inga rader matchade Trpsätt-reglerna (GLC/Turbil/Gbg eller GLC/Timbil/Gbg). Lägg till rader manuellt eller använd annan indata.`,
+      )
+    } else {
+      setStatus(
+        `Transformering klar: ${parsed.rows.length} indatarad(er) → ${transformed.length} utrad(er). Datum satt till ${getTomorrowDate()}.`,
+      )
+    }
+  }, [])
+
   const handleFileSelect = useCallback(async (file: File) => {
     setIsLoading(true)
     setError(null)
     setStatus(null)
     setWarning(null)
-    setFileName(file.name)
+    setSourceLabel(file.name)
     setOutputRows([])
+    setInputRowCount(0)
 
     try {
       const parsed = await parseInputCsv(file)
-
-      if (parsed.parseError) {
-        setError(parsed.parseError)
-        return
-      }
-
-      if (parsed.missingColumns.length > 0) {
-        setWarning(
-          `Följande indatakolumner saknas i filen (valfria): ${parsed.missingColumns.join(', ')}`,
-        )
-      }
-
-      if (parsed.rows.length === 0) {
-        setError('Filen innehåller inga datarader.')
-        return
-      }
-
-      setInputRowCount(parsed.rows.length)
-      const transformed = transformInputRows(parsed.rows)
-      setOutputRows(transformed)
-
-      if (transformed.length === 0) {
-        setStatus(
-          `${parsed.rows.length} indatarad(er) lästes in, men inga rader matchade Trpsätt-reglerna (GLC/Turbil/Gbg eller GLC/Timbil/Gbg). Lägg till rader manuellt eller ladda upp en annan fil.`,
-        )
-      } else {
-        setStatus(
-          `Transformering klar: ${parsed.rows.length} indatarad(er) → ${transformed.length} utrad(er). Datum satt till ${getTomorrowDate()}.`,
-        )
-      }
+      processParsedInput(parsed)
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Kunde inte läsa CSV-filen.',
@@ -65,7 +76,28 @@ export default function App() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [processParsedInput])
+
+  const handlePastedInputSubmit = useCallback(() => {
+    setIsLoading(true)
+    setError(null)
+    setStatus(null)
+    setWarning(null)
+    setSourceLabel('Klistrad data')
+    setOutputRows([])
+    setInputRowCount(0)
+
+    try {
+      const parsed = parseInputText(pastedInput, 'Klistrad data')
+      processParsedInput(parsed)
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Kunde inte läsa inklistrad data.',
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }, [pastedInput, processParsedInput])
 
   const handleCellChange = useCallback(
     (rowIndex: number, column: OutputColumn, value: string) => {
@@ -110,13 +142,21 @@ export default function App() {
       <main className="mx-auto max-w-[1800px] space-y-6 px-4 py-6 sm:px-6">
         <section>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-            1. Ladda upp
+            1. Ladda upp eller klistra in
           </h2>
-          <FileUpload
-            onFileSelect={handleFileSelect}
-            isLoading={isLoading}
-            fileName={fileName}
-          />
+          <div className="grid gap-4 xl:grid-cols-2">
+            <FileUpload
+              onFileSelect={handleFileSelect}
+              isLoading={isLoading}
+              fileName={sourceLabel === 'Klistrad data' ? null : sourceLabel}
+            />
+            <PasteInput
+              value={pastedInput}
+              onChange={setPastedInput}
+              onSubmit={handlePastedInputSubmit}
+              isLoading={isLoading}
+            />
+          </div>
         </section>
 
         <section>
@@ -146,7 +186,7 @@ export default function App() {
           )}
           {!error && !status && !warning && !isLoading && (
             <p className="text-sm text-[var(--color-text-muted)]">
-              Ingen fil bearbetad ännu.
+              Ingen indata bearbetad ännu.
             </p>
           )}
           {isLoading && (

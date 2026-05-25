@@ -81,7 +81,17 @@ function parseWeight(value: string | number | undefined): number {
 function formatKolliAntal(sum: number): string {
   if (sum <= 0) return ''
   const rounded = Math.round(sum * 1000) / 1000
-  return Number.isInteger(rounded) ? String(rounded) : String(rounded)
+  return Number.isInteger(rounded)
+    ? String(rounded)
+    : String(rounded).replace('.', ',')
+}
+
+function formatOutputNumber(value: number): string {
+  if (value <= 0) return ''
+  const rounded = Math.round(value * 1000) / 1000
+  return Number.isInteger(rounded)
+    ? String(rounded)
+    : String(rounded).replace('.', ',')
 }
 
 function parseNumericCell(value: string): number {
@@ -98,7 +108,7 @@ function computeGodsAntal1(godsslag: string, kolliAntal: string): string {
   if (godsslag === 'Halvpall' || godsslag === 'B-Halvpall') {
     return formatKolliAntal(antal * HALF_PALLET_FACTOR)
   }
-  if (godsslag === 'A-Pall' || godsslag === 'B-Pall') {
+  if (godsslag === 'Pall' || godsslag === 'B-Pall') {
     return formatKolliAntal(antal)
   }
   return ''
@@ -157,7 +167,7 @@ function resolveKolli(
   if (sum > HALF_PALLET_FACTOR) {
     return {
       kolliAntal: formatKolliAntal(sum),
-      godsslag: godsslagByLossningskod(input, 'A-Pall', 'B-Pall'),
+      godsslag: godsslagByLossningskod(input, 'Pall', 'B-Pall'),
     }
   }
 
@@ -185,7 +195,7 @@ function weightVariants(input: InputRow): WeightVariant[] {
   if (fryst > 0) {
     const kolli = kolliFrozen(input)
     variants.push({
-      kolliVikt: String(fryst),
+      kolliVikt: formatOutputNumber(fryst),
       kolliAntal: kolli.kolliAntal,
       godsslag: kolli.godsslag,
       fraktsedelSuffix: 'F',
@@ -195,7 +205,7 @@ function weightVariants(input: InputRow): WeightVariant[] {
   if (kylt > 0) {
     const kolli = kolliChilled(input)
     variants.push({
-      kolliVikt: String(kylt),
+      kolliVikt: formatOutputNumber(kylt),
       kolliAntal: kolli.kolliAntal,
       godsslag: kolli.godsslag,
       fraktsedelSuffix: 'K',

@@ -66,17 +66,19 @@ function decodeCsvBuffer(buffer: ArrayBuffer): string {
 }
 
 function detectDelimiter(firstLine: string): string {
+  const tabs = (firstLine.match(/\t/g) ?? []).length
   const semicolons = (firstLine.match(/;/g) ?? []).length
   const commas = (firstLine.match(/,/g) ?? []).length
+  if (tabs > semicolons && tabs > commas) return '\t'
   return semicolons > commas ? ';' : ','
 }
 
-export async function parseInputCsv(file: File): Promise<ParseInputResult> {
-  const buffer = await file.arrayBuffer()
-  const text = decodeCsvBuffer(buffer)
-
+export function parseInputText(
+  text: string,
+  fileLabel = 'Klistrad data',
+): ParseInputResult {
   if (!text.trim()) {
-    return { rows: [], missingColumns: [], fileLabel: file.name }
+    return { rows: [], missingColumns: [], fileLabel }
   }
 
   const firstLine = text.split(/\r?\n/)[0] ?? ''
@@ -93,8 +95,8 @@ export async function parseInputCsv(file: File): Promise<ParseInputResult> {
     return {
       rows: [],
       missingColumns: [],
-      fileLabel: file.name,
-      parseError: 'Ingen data hittades i CSV-filen',
+      fileLabel,
+      parseError: 'Ingen data hittades i indata.',
     }
   }
 
@@ -105,7 +107,7 @@ export async function parseInputCsv(file: File): Promise<ParseInputResult> {
   })
 
   if (json.length === 0) {
-    return { rows: [], missingColumns: [], fileLabel: file.name }
+    return { rows: [], missingColumns: [], fileLabel }
   }
 
   const headers = Object.keys(json[0] ?? {})
@@ -113,5 +115,11 @@ export async function parseInputCsv(file: File): Promise<ParseInputResult> {
   const headerMap = buildHeaderMap(headers)
   const rows = json.map((raw) => normalizeInputRow(raw, headerMap))
 
-  return { rows, missingColumns, fileLabel: file.name }
+  return { rows, missingColumns, fileLabel }
+}
+
+export async function parseInputCsv(file: File): Promise<ParseInputResult> {
+  const buffer = await file.arrayBuffer()
+  const text = decodeCsvBuffer(buffer)
+  return parseInputText(text, file.name)
 }
